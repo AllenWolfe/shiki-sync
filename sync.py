@@ -4,7 +4,7 @@ ANILIST_USER = os.environ["ANILIST_USER"]
 CLIENT_ID = os.environ["SHIKI_CLIENT_ID"]
 CLIENT_SECRET = os.environ["SHIKI_CLIENT_SECRET"]
 AUTH_CODE = os.environ["SHIKI_AUTH_CODE"]
-HEADERS = {"User-Agent": "AnilistSync/1.0"}
+HEADERS = {"User-Agent": "AnilistSync"}
 
 token_file = "token.json"
 if os.path.exists(token_file):
@@ -20,9 +20,10 @@ else:
         "redirect_uri": "urn:ietf:wg:oauth:2.0:oob"
     })
 
+if r.status_code != 200:
+    raise Exception(f"Код ответа {r.status_code}: {r.text[:300]}")
+
 tokens = r.json()
-if "access_token" not in tokens:
-    raise Exception(f"Ошибка авторизации Shikimori: {tokens}")
 json.dump(tokens, open(token_file, "w"))
 HEADERS["Authorization"] = f"Bearer {tokens['access_token']}"
 
