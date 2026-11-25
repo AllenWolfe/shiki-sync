@@ -1,0 +1,33 @@
+name: Shikimori Sync
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Run sync
+        env:
+          ANILIST_USER: ${{ secrets.ANILIST_USER }}
+          SHIKI_CLIENT_ID: ${{ secrets.SHIKI_CLIENT_ID }}
+          SHIKI_CLIENT_SECRET: ${{ secrets.SHIKI_CLIENT_SECRET }}
+          SHIKI_AUTH_CODE: ${{ secrets.SHIKI_AUTH_CODE }}
+        run: python sync.py
+      - name: Save refreshed token
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add token.json
+          git commit -m "Update token" || exit 0
+          git push
+          
